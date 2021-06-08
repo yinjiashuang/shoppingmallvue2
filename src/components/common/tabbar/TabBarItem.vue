@@ -28,6 +28,7 @@
         // /home -> item1(/category) = false
         // /home -> item1(/cart) = true
         // /home -> item1(/profile) = true
+        // 对比点击目标木块和active模块的路径是否相同
         return this.$route.path.indexOf(this.path) !== -1
       },
       activeStyle() {

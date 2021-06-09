@@ -1,13 +1,23 @@
 <template>
   <div id='home'>
     <nav-bar class="home_nav"><div slot="center">购物街</div></nav-bar>
-    <home-swiper :banners='banners'/>
-    <recommend-view :recommends='recommends'></recommend-view>
-    <weekly-feature></weekly-feature>
-    <tab-control class='tab-control'
-                :titles="['流行','新款','精品']"
-                @tabClick='tabClick'></tab-control>
-    <goods-list :goods="showGoods"></goods-list>
+    <scroll class="content" 
+            ref='home_scroll' 
+            :probe-type='3'
+            @scroll='contentScroll'
+            :pull-up-load='true'
+            @pullingUp='loadMore'>
+      <home-swiper :banners='banners'/>
+      <recommend-view :recommends='recommends'></recommend-view>
+      <weekly-feature></weekly-feature>
+      <tab-control class='tab-control'
+                  :titles="['流行','新款','精品']"
+                  @tabClick='tabClick'></tab-control>
+      <goods-list :goods="showGoods"></goods-list>
+    </scroll>
+
+    <back-top @click.native='backTop'
+              v-show='isShowBackTop'></back-top>
     
   </div>
 
@@ -23,6 +33,8 @@ import weeklyFeature from 'views/home/childComponents/homeWeeklyFeature.vue'
 import NavBar from 'components/common/navBar/navBar.vue'
 import TabControl from 'components/content/TabControl/TabControl.vue'
 import goodsList from 'components/content/goods/goodsList.vue'
+import scroll from 'components/common/scroll/scroll.vue'
+import backTop from 'components/content/backTop/backTop.vue'
 
 import {getHomeMultidata,getHomeGoods} from 'network/home.js'
 
@@ -35,7 +47,9 @@ export default {
     weeklyFeature,
     NavBar,
     TabControl,
-    goodsList
+    goodsList,
+    scroll,
+    backTop
   },
   data(){
     return{
@@ -49,7 +63,10 @@ export default {
         'sell':{page:0,list:[]},
       },
 
-      currentType:'pop'
+      currentType:'pop',
+
+      isShowBackTop:false
+  
     }
   },
 
@@ -87,6 +104,8 @@ export default {
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1
 
+        this.$refs.home_scroll.finishPullUp()
+
       })
     },
     // 事件监听相关方法
@@ -102,7 +121,28 @@ export default {
           this.currentType='sell'
         
       }
+    },
+
+    backTop(){
+      // !!scrollTo方法是实现滚到到目标位置x，y，直接调用配置目标位置就可
+      // 记得要在scroll组件中先定义一下要调用的函数
+      this.$refs.home_scroll.scrollTo(0, 0)
+      
+      // console.log(this.$refs.home_scroll.message)
+    },
+
+    contentScroll(position) {
+        this.isShowBackTop = (-position.y) > 1000
+    },
+    
+    loadMore(){
+      // console.log("上拉加载更多")
+      this.getHomeGoods(this.currentType);
+
+      // this.$refs.scroll.scroll.refresh()
     }
+    
+    
 
   }
 
@@ -112,6 +152,8 @@ export default {
 <style scoped>
   #home{
     padding-top:44px;
+    height: 100vh;
+    position: relative;
   }
   .home_nav{
     background-color: var(--color-tint);
@@ -129,5 +171,15 @@ export default {
     top:44px;
 
     z-index: 9;
+  }
+
+  .content{
+    overflow: hidden;
+
+    position: absolute;
+    top: 44px;
+    bottom: 49px;
+    left: 0;
+    right: 0;
   }
 </style>

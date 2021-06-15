@@ -53,14 +53,23 @@ export default {
   },
   methods:{
     scrollTo(x, y, time=300) {
-        this.scroll.scrollTo(x, y, time)
+      // 前面加上this.scroll用来避免再调用后续scroll相关函数时，scroll因网速原因未被创建
+        this.scroll && this.scroll.scrollTo(x, y, time)
     },
 
     finishPullUp(){
-      this.scroll.finishPullUp()
+      this.scroll && this.scroll.finishPullUp()
+    },
+
+    refresh(){
+     this.scroll && this.scroll.refresh()
+    },   
+      
+    getScrollY(){
+      return this.scroll ? this.scroll.y : 0
     }
   }
- }
+}
 </script>
 
 <style scoped>

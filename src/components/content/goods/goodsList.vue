@@ -33,7 +33,9 @@ export default {
 /* 一行显示两个 */
 .goods {
   display: flex;
+  /* 规定在灵活的项目在必要的时候拆行或拆列 */
   flex-wrap: wrap;
+  /* 项目位于各行之前、之间、之后都留有空白的容器内 */
   justify-content: space-around;
 
   padding: 2px;

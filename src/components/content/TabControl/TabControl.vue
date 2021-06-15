@@ -27,6 +27,7 @@ export default {
   
   methods:{
     itemClick(index){
+      // 在这里实现高亮
       this.currentIndex=index;
       // 子组件传到父组件!!!
       this.$emit('tabClick',index)

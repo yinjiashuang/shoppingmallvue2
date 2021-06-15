@@ -1,18 +1,28 @@
 <template>
   <div id='home'>
     <nav-bar class="home_nav"><div slot="center">购物街</div></nav-bar>
+
+    <tab-control ref='tabcontrol1'
+                  :titles="['流行','新款','精品']"
+                  @tabClick='tabClick'
+                  calss='tab-control'
+                  v-show="isTabFixed"
+                  ></tab-control>
+
     <scroll class="content" 
             ref='home_scroll' 
             :probe-type='3'
             @scroll='contentScroll'
             :pull-up-load='true'
             @pullingUp='loadMore'>
-      <home-swiper :banners='banners'/>
+      <home-swiper :banners='banners'
+                   @swipperImageLoad='swipperImageLoad'/>
       <recommend-view :recommends='recommends'></recommend-view>
       <weekly-feature></weekly-feature>
-      <tab-control class='tab-control'
+      <tab-control ref='tabcontrol2'
                   :titles="['流行','新款','精品']"
-                  @tabClick='tabClick'></tab-control>
+                  @tabClick='tabClick'
+                  ></tab-control>
       <goods-list :goods="showGoods"></goods-list>
     </scroll>
 
@@ -65,7 +75,13 @@ export default {
 
       currentType:'pop',
 
-      isShowBackTop:false
+      isShowBackTop:false,
+
+      tapOffsetTop:0,
+      // 默认情况下不需要吸顶
+      isTabFixed:false,
+
+      saveY:0
   
     }
   },
@@ -79,14 +95,44 @@ export default {
     this.getHomeGoods('pop');
     this.getHomeGoods('new');
     this.getHomeGoods('sell');
-    
   },
+  mounted(){
+    // 图片加载完成的事件监听，将函数传进去不加小括号，加小括号函数直接执行将传进函数的返回值
+    const refresh=this.debounce(this.$refs.home_scroll.refresh)
+
+    // 3.在创建的时候就要定义好监听事件，监听item中图片加载完成
+    this.$bus.$on('itemImageLoad',()=>{
+      refresh()
+    })
+  }, 
+  activated() {
+      this.$refs.home_scroll.scrollTo(0,this.saveY,0);
+      this.$refs.home_scroll.refresh()
+    },
+  deactivated() {
+      this.saveY= this.$refs.home_scroll.getScrollY()
+    },
+
   computed:{
     showGoods(){
       return this.goods[this.currentType].list
     }
   },
   methods:{
+    // 防抖函数:func执行函数，delay需要等多久
+    debounce(func,delay){
+      // 用timer来记录有没有定时器
+      let timer=null
+
+      return function(...args){
+        // 如果有timer就先销毁timer
+        if(timer) clearTimeout(timer)
+
+        timer=setTimeout(()=>{
+          func.apply(this,args)
+        },delay)
+      }
+    },
     // 网络请求相关方法
     getHomeMultidata(){
       getHomeMultidata().then(res=>{
@@ -104,6 +150,7 @@ export default {
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1
 
+        // 完成上拉加载更多，当上拉加载数据加载完毕后，需要调用此方法告诉 better-scroll 数据已加载。
         this.$refs.home_scroll.finishPullUp()
 
       })
@@ -121,6 +168,9 @@ export default {
           this.currentType='sell'
         
       }
+
+      this.$refs.tabcontrol1.currentIndex=index;
+      this.$refs.tabcontrol2.currentIndex=index;
     },
 
     backTop(){
@@ -130,16 +180,25 @@ export default {
       
       // console.log(this.$refs.home_scroll.message)
     },
-
+    // 监听首页位置
     contentScroll(position) {
+        //1判断backtop是否显示
         this.isShowBackTop = (-position.y) > 1000
+
+        //2决定tabControl是否吸顶,判断大小之后，看tabcontrol的动态类中是否有position：fixed的样式
+        this.isTabFixed=(-position.y) > this.tapOffsetTop
     },
     
     loadMore(){
-      // console.log("上拉加载更多")
-      this.getHomeGoods(this.currentType);
+      this.getHomeGoods(this.currentType)
+    },
 
-      // this.$refs.scroll.scroll.refresh()
+    //获取tabControlde offsetTop//距离父组件的距离，只在html元素层面
+    // *所有组件都有$el属性：用于获取组件中的元素
+    // console.log(this.$refs.tabcontrol)
+    swipperImageLoad(){
+      // console.log(this.$refs.tabcontrol2.$el.offsetTop)
+      this.tapOffsetTop=this.$refs.tabcontrol2.$el.offsetTop;
     }
     
     
@@ -151,7 +210,7 @@ export default {
 
 <style scoped>
   #home{
-    padding-top:44px;
+    
     height: 100vh;
     position: relative;
   }
@@ -159,17 +218,17 @@ export default {
     background-color: var(--color-tint);
     color:#fff;
 
-    position: fixed;
+    /* 使用浏览器原声滚动的时候使用，完成吸顶效果所以注释掉 */
+    /* position: fixed;
     left: 0;
     right: 0;
     top: 0;
-    z-index: 9;
+    z-index: 9; */
 
   }
+  
   .tab-control{
-    position:sticky;
-    top:44px;
-
+    position:relative;
     z-index: 9;
   }
 

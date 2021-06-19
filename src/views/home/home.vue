@@ -45,6 +45,7 @@ import TabControl from 'components/content/TabControl/TabControl.vue'
 import goodsList from 'components/content/goods/goodsList.vue'
 import scroll from 'components/common/scroll/scroll.vue'
 import backTop from 'components/content/backTop/backTop.vue'
+import {debounce} from 'common/utils.js'
 
 import {getHomeMultidata,getHomeGoods} from 'network/home.js'
 
@@ -98,15 +99,16 @@ export default {
   },
   mounted(){
     // 图片加载完成的事件监听，将函数传进去不加小括号，加小括号函数直接执行将传进函数的返回值
-    const refresh=this.debounce(this.$refs.home_scroll.refresh)
+    const refresh=debounce(this.$refs.home_scroll.refresh)
 
     // 3.在创建的时候就要定义好监听事件，监听item中图片加载完成
     this.$bus.$on('itemImageLoad',()=>{
       refresh()
     })
   }, 
+  // 钩子函数
   activated() {
-      this.$refs.home_scroll.scrollTo(0,this.saveY,0);
+      this.$refs.home_scroll.scrollTo(0,this.saveY,100);
       this.$refs.home_scroll.refresh()
     },
   deactivated() {
@@ -119,20 +121,20 @@ export default {
     }
   },
   methods:{
-    // 防抖函数:func执行函数，delay需要等多久
-    debounce(func,delay){
-      // 用timer来记录有没有定时器
-      let timer=null
+    // // 防抖函数:func执行函数，delay需要等多久
+    // debounce(func,delay){
+    //   // 用timer来记录有没有定时器
+    //   let timer=null
 
-      return function(...args){
-        // 如果有timer就先销毁timer
-        if(timer) clearTimeout(timer)
+    //   return function(...args){
+    //     // 如果有timer就先销毁timer
+    //     if(timer) clearTimeout(timer)
 
-        timer=setTimeout(()=>{
-          func.apply(this,args)
-        },delay)
-      }
-    },
+    //     timer=setTimeout(()=>{
+    //       func.apply(this,args)
+    //     },delay)
+    //   }
+    // },
     // 网络请求相关方法
     getHomeMultidata(){
       getHomeMultidata().then(res=>{
@@ -212,7 +214,7 @@ export default {
   #home{
     
     height: 100vh;
-    position: relative;
+    /* position: relative; */
   }
   .home_nav{
     background-color: var(--color-tint);

@@ -12,6 +12,7 @@
       <span>{{goods.services[goods.services.length-1].name}}</span>
     </div>
     <div class="info-service">
+      <!-- v-for中是数字的话，数字从1开始 -->
       <span class="info-service-item" v-for="index in goods.services.length-1" :key="index">
         <img :src="goods.services[index-1].icon">
         <span>{{goods.services[index-1].name}}</span>

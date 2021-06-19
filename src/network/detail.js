@@ -9,6 +9,12 @@ export function getDetail(iid){
   })
 }
 
+export function getRecommend() {
+  return request({
+    url: '/recommend'
+  })
+}
+
 
 // 将需要的信息整合成一个对象，方便后续使用
 export class GoodsInfo{

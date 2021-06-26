@@ -1,6 +1,9 @@
 <template>
   <div id='home'>
-    <nav-bar class="home_nav"><div slot="center">购物街</div></nav-bar>
+    <nav-bar class="home_nav">
+      <div slot="center">购物街</div>
+      <div slot="right"><search-bar></search-bar></div>
+    </nav-bar>
 
     <tab-control ref='tabcontrol1'
                   :titles="['流行','新款','精品']"
@@ -41,6 +44,7 @@ import recommendView from 'views/home/childComponents/homeRecommendView.vue'
 import weeklyFeature from 'views/home/childComponents/homeWeeklyFeature.vue'
 
 import NavBar from 'components/common/navBar/navBar.vue'
+import searchBar from 'views/home/childComponents/search.vue'
 import TabControl from 'components/content/TabControl/TabControl.vue'
 import goodsList from 'components/content/goods/goodsList.vue'
 import scroll from 'components/common/scroll/scroll.vue'
@@ -57,6 +61,7 @@ export default {
     recommendView,
     weeklyFeature,
     NavBar,
+    searchBar,
     TabControl,
     goodsList,
     scroll,
@@ -110,6 +115,7 @@ export default {
   activated() {
       this.$refs.home_scroll.scrollTo(0,this.saveY,100);
       this.$refs.home_scroll.refresh()
+      
     },
   deactivated() {
       this.saveY= this.$refs.home_scroll.getScrollY()
@@ -214,7 +220,7 @@ export default {
   #home{
     
     height: 100vh;
-    /* position: relative; */
+    position: relative;
   }
   .home_nav{
     background-color: var(--color-tint);

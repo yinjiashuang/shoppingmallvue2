@@ -5,17 +5,15 @@
               ref="scroll"
               :probe-type='3'
               @scroll='contentScroll'>
-      <div>
-        <detail-swipper :top-images='topImages'></detail-swipper>
-        <detail-base-info :goods='goods'></detail-base-info>
-        <detail-shop-info :shop='shop'></detail-shop-info>
-        <detail-goods-info :detail-info='detailInfo' @imageLoad='imageLoad'></detail-goods-info>
-        <detail-param-info :param-info='paramInfo' ref="param"></detail-param-info>
-        <detail-comment-info :comment-info='commentInfo' ref="comment"></detail-comment-info>
-        <detail-recommend-info :recommendList='recommendList' ref="recommend"></detail-recommend-info>
-      </div>
+      <detail-swipper :top-images='topImages'></detail-swipper>
+      <detail-base-info :goods='goods'></detail-base-info>
+      <detail-shop-info :shop='shop'></detail-shop-info>
+      <detail-goods-info :detail-info='detailInfo' @imageLoad='imageLoad'></detail-goods-info>
+      <detail-param-info :param-info='paramInfo' ref="param"></detail-param-info>
+      <detail-comment-info :comment-info='commentInfo' ref="comment"></detail-comment-info>
+      <detail-recommend-info :recommendList='recommendList' ref="recommend"></detail-recommend-info>    
     </bscroll>
-    <detail-bottom-bar class="bottom-bar"></detail-bottom-bar>
+    <detail-bottom-bar class="bottom-bar" @addToCart="addToCart"></detail-bottom-bar>
     <back-top @click.native='backTop'  v-show="showBackTop"></back-top>
   </div>
 </template>
@@ -36,6 +34,7 @@ import backTop from 'components/content/backTop/backTop.vue'
 // import {backTopMixin} from "common/mixin.js"
 // import {BACKTOP_DISTANCE} from 'common/const.js'
 import {getDetail, getRecommend ,GoodsInfo ,Shop ,GoodsParam} from 'network/detail.js'
+import {debounce} from 'common/utils.js'
 
 export default {
   name: 'detail',
@@ -113,7 +112,15 @@ export default {
 
     
   },
-  
+  mounted(){
+    // 图片加载完成的事件监听，将函数传进去不加小括号，加小括号函数直接执行将传进函数的返回值
+    const refresh=debounce(this.$refs.scroll.refresh)
+
+    // 3.在创建的时候就要定义好监听事件，监听item中图片加载完成
+    this.$bus.$on('itemImageLoad',()=>{
+      refresh()
+    })
+  }, 
   methods:{
     imageLoad(){
       this.$refs.scroll.refresh();
@@ -151,6 +158,26 @@ export default {
     titleClick(index){
       // console.log(index)
       this.$refs.scroll.scrollTo(0,-this.themeTopY[index],300)
+    },
+    addToCart(){
+      // console.log('------')
+      // 1.获取购物车需要展示的信息，为了方便先定义一个对象
+      const product={}
+      product.image=this.topImages[0]
+      product.title=this.goods.title
+      product.desc=this.goods.desc
+      product.price=this.goods.newPrice
+      product.iid=this.iid
+      product.realPrice=this.goods.realPrice
+
+      // 2.将商品加入购物车
+      // 下面方法是用在mutation中的
+      // this.$store.commit('addCart',product)
+      // 用在action的方法是dispath，而dispatch可以返回一个promise
+      this.$store.dispatch('addCart',product).then(res => {
+        // console.log(res)
+        this.$toast.showToast(res)
+      })
     }
   }
  }
@@ -171,7 +198,4 @@ export default {
   overflow: hidden;
 }
 
-.bottom-bar{
-  /* z-index: 10; */
-}
 </style>

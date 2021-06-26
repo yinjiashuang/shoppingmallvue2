@@ -1,48 +1,46 @@
 <template>
-  <div class="goods-item" @click='goodsitemClick'>
-    <img :src="goodsItem.show.img" alt="" @load='imageLoad'>
+  <div class="goods-item" @click="goToDetail">
+    <img v-lazy="getImg" :key="getImg" alt="" @load="imageLoad">
     <div class="goods-info">
       <p>{{goodsItem.title}}</p>
-      <span class="price">￥{{ goodsItem.price }}</span>
+      <span class="price">¥{{goodsItem.price}}</span>
       <span class="collect">{{goodsItem.cfav}}</span>
     </div>
   </div>
 </template>
 
 <script>
-
-
-export default {
-  name: 'goodsItem',
-  props:{
-    goodsItem:{
-      type:Object,
-      default(){
-        return {}
+	export default {
+		name: "GoodsListItem",
+    props: {
+		  goodsItem: {
+		    type: Object,
+        default: {}
       }
-    }
-  },
-  methods:{
-    imageLoad(){
+    },
+    mounted: function () {
+      // console.log(this.goods);
+    },
+    methods: {
+      imageLoad(){
       // console.log('imageLoad')
       this.$bus.$emit('itemImageLoad')
+      },
+      goToDetail: function () {
+        this.$router.push('/detail/'+this.goodsItem.iid)
+      },
+      
     },
-    goodsitemClick(){
-      // console.log('跳转到详情页')
-      this.$router.push('/detail/'+this.goodsItem.iid)
+    computed: {
+      getImg() {
+        return this.goodsItem.img || this.goodsItem.image || this.goodsItem.show.img
+      }
     }
-  },
-  
-  data() { 
-    return {
-
-    }
-  }
- }
+	}
 </script>
 
 <style scoped>
-.goods-item {
+  .goods-item {
     padding-bottom: 40px;
     position: relative;
 

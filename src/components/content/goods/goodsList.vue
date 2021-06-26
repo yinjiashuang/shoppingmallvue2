@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import goodListItem from './goodsListItem.vue'
+import goodListItem from './GoodsListItem_copy.vue'
 
 export default {
   name: 'goodsList',

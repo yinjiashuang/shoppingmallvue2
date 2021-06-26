@@ -27,7 +27,9 @@
     methods: {
       addToCart() {
         this.$emit('addToCart')
-      }
+        // console.log('add to shopcart')
+      },
+      
     }
 	}
 </script>
